@@ -50,6 +50,10 @@ class EMAQuantizer(nn.Module):
         super().__init__()
         self.embedding = nn.Parameter(torch.randn(num_embeddings, embedding_dim))
 
+        # ✅ These are needed to load your old weights
+        self.register_buffer("ema_cluster_size", torch.zeros(num_embeddings))
+        self.ema_w = nn.Parameter(self.embedding.data.clone(), requires_grad=False)
+
     def forward(self, z):
         z = z.permute(0, 2, 3, 1).contiguous()
         z_flat = z.view(-1, z.size(-1))
@@ -57,6 +61,7 @@ class EMAQuantizer(nn.Module):
         indices = dist.argmin(1)
         quantized = self.embedding[indices].view(z.shape).permute(0, 3, 1, 2)
         return quantized, indices.view(z.shape[0], -1)
+
 
 class VQVAE(nn.Module):
     def __init__(self):
