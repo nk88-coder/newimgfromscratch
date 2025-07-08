@@ -207,10 +207,14 @@ if __name__ == "__main__":
     vqvae.load_state_dict(checkpoint["vqvae_state"])
     transformer.load_state_dict(checkpoint["transformer_state"])
 
+    from PIL import Image
+    import numpy as np
+
     print("✅ Weights loaded!")
+
     image = generate_image(vqvae, transformer, text_embed)[0].permute(1, 2, 0).cpu().numpy()
     image = (image + 1) / 2
-    plt.imshow(image)
-    plt.axis("off")
-    plt.title(args.prompt)
-    plt.show()
+    image = (image * 255).astype(np.uint8)
+    Image.fromarray(image).save("output.png")
+    print("📸 Image saved as output.png ✅")
+
